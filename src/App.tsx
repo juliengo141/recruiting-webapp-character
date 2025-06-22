@@ -15,6 +15,7 @@ function App() {
   });
 
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
+  const [skillPoints, setSkillPoints] = useState<Record<string, number>>({});
 
   const incrementAttribute = (attribute: keyof Attributes) => {
     setAttributes((prev) => ({
@@ -44,6 +45,46 @@ function App() {
   const calculateAbilityModifier = (attributeValue: number): number => {
     return Math.floor((attributeValue - 10) / 2);
   };
+
+  const getAvailableSkillPoints = (): number => {
+    const intelligenceModifier = calculateAbilityModifier(attributes.Intelligence);
+    return Math.max(0, 10 + (4 * intelligenceModifier));
+  };
+
+  const getUsedSkillPoints = (): number => {
+    return Object.values(skillPoints).reduce((total, points) => total + points, 0);
+  };
+
+  const getRemainingSkillPoints = (): number => {
+    return getAvailableSkillPoints() - getUsedSkillPoints();
+  };
+
+  const incrementSkillPoint = (skillName: string) => {
+    if (getRemainingSkillPoints() > 0) {
+      setSkillPoints((prev) => ({
+        ...prev,
+        [skillName]: (prev[skillName] || 0) + 1,
+      }));
+    }
+  };
+
+  const decrementSkillPoint = (skillName: string) => {
+    setSkillPoints((prev) => ({
+      ...prev,
+      [skillName]: Math.max(0, (prev[skillName] || 0) - 1)
+    }));
+  };
+
+  const getSkillTotal = (skillName: string): number => {
+    const skill = SKILL_LIST.find((s) => s.name === skillName);
+    if (!skill) {
+      return 0;
+    }
+    const attributeModifier = calculateAbilityModifier(attributes[skill.attributeModifier as keyof Attributes]);
+    const pointsAdded = skillPoints[skillName] || 0;
+    return attributeModifier + pointsAdded;
+  };
+
   
   return (
     <div className="App">
@@ -52,7 +93,7 @@ function App() {
       </header>
       <section className="App-section">
         <div className="App-grid">
-          <div className="attributes-section">
+          <div>
             <h2>Attributes</h2>
             <div>
               {Object.entries(attributes).map(([attribute, value]) => (
@@ -65,7 +106,7 @@ function App() {
               ))}
             </div>
           </div>
-          <div className="classes-section">
+          <div>
             <h2>Classes</h2>
             <div>
               {Object.keys(CLASS_LIST).map((className) => (
@@ -89,6 +130,35 @@ function App() {
                 ))}
               </div>
             )}
+          </div>
+          <div>
+            <h2>Skills</h2>
+            <div>
+              <p>Available Points: {getRemainingSkillPoints()} / {getAvailableSkillPoints()}</p>
+            </div>
+            <div>
+              {SKILL_LIST.map((skill) => (
+                <div key={skill.name}>
+                  <span>{skill.name}: {skillPoints[skill.name] || 0}</span>
+                  <button 
+                    className="clickable" 
+                    onClick={() => incrementSkillPoint(skill.name)}
+                    disabled={getRemainingSkillPoints() <= 0}
+                  >
+                    +
+                  </button>
+                  <button 
+                    className="clickable" 
+                    onClick={() => decrementSkillPoint(skill.name)}
+                    disabled={(skillPoints[skill.name] || 0) <= 0}
+                  >
+                    -
+                  </button>
+                  <span> modifier({skill.attributeModifier}): {calculateAbilityModifier(attributes[skill.attributeModifier as keyof Attributes])}, </span>
+                  <span> total: {getSkillTotal(skill.name)}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
