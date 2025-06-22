@@ -14,6 +14,8 @@ function App() {
     Charisma: 10,
   });
 
+  const [selectedClass, setSelectedClass] = useState<Class | null>(null);
+
   const incrementAttribute = (attribute: keyof Attributes) => {
     setAttributes((prev) => ({
       ...prev,
@@ -34,6 +36,10 @@ function App() {
       return attributes[attribute as keyof Attributes] >= minValue;
     });
   };
+
+  const handleClassClick = (className: Class) => {
+    setSelectedClass(selectedClass === className ? null : className);
+  };
   
   return (
     <div className="App">
@@ -41,28 +47,43 @@ function App() {
         <h1>React Coding Exercise</h1>
       </header>
       <section className="App-section">
-        <div>
-          <h2>Attributes</h2>
-          <div>
-            {Object.entries(attributes).map(([attribute, value]) => (
-              <div key={attribute}>
-                <span>{attribute}: {value}</span>
-                <button onClick={() => incrementAttribute(attribute as keyof Attributes)}>+</button>
-                <button onClick={() => decrementAttribute(attribute as keyof Attributes)}>-</button>
-              </div>
-            ))}
+        <div className="App-grid">
+          <div className="attributes-section">
+            <h2>Attributes</h2>
+            <div>
+              {Object.entries(attributes).map(([attribute, value]) => (
+                <div key={attribute}>
+                  <span>{attribute}: {value}</span>
+                  <button className="clickable" onClick={() => incrementAttribute(attribute as keyof Attributes)}>+</button>
+                  <button className="clickable" onClick={() => decrementAttribute(attribute as keyof Attributes)}>-</button>
+                </div>
+              ))}
+            </div>
           </div>
-          <div>
+          <div className="classes-section">
             <h2>Classes</h2>
             <div>
               {Object.keys(CLASS_LIST).map((className) => (
                 <div key={className}>
-                  <span className={meetsClassRequirements(className as Class) ? 'class-available' : ''}>
+                  <span 
+                    className={`${meetsClassRequirements(className as Class) ? 'class-available' : ''} clickable`}
+                    onClick={() => handleClassClick(className as Class)}
+                  >
                     {className}
                   </span>
                 </div>
               ))}
             </div>
+            {selectedClass && (
+              <div>
+                <h3>Minimum Requirements for {selectedClass}:</h3>
+                {Object.entries(CLASS_LIST[selectedClass]).map(([attribute, minValue]) => (
+                  <div key={attribute}>
+                    {attribute}: {minValue}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>

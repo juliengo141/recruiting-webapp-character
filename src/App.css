@@ -48,3 +48,21 @@
 .class-available {
   color: green;
 }
+
+.clickable {
+  cursor: pointer;
+}
+
+.App-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.attributes-section, .classes-section {
+  padding: 1.5rem;
+  border-radius: 8px;
+}
