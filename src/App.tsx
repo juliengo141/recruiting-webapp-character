@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import { ATTRIBUTE_LIST, CLASS_LIST, SKILL_LIST } from './consts';
 import type { Attributes, Class } from './types';
@@ -16,6 +16,90 @@ function App() {
 
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
   const [skillPoints, setSkillPoints] = useState<Record<string, number>>({});
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  const API_URL = "https://recruiting.verylongdomaintotestwith.ca/api/{juliengo141}/character";
+
+  const saveCharacter = useCallback(async () => {
+    if (isInitialLoad) {
+      return;
+    }
+
+    const characterData = {
+      attributes,
+      selectedClass,
+      skillPoints,
+      timestamp: new Date().toISOString()
+    };
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(characterData),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Response error text:', errorText);
+        throw new Error(`Failed to save character: ${response.status} - ${errorText}`);
+      }
+
+      const responseData = await response.text();
+    } catch (error) {
+      console.error('Save failed!', error);
+    }
+  }, [attributes, selectedClass, skillPoints, isInitialLoad]);
+
+  const loadCharacter = async () => {
+    try {
+      const response = await fetch(API_URL, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          setIsInitialLoad(false);
+          return;
+        }
+        const errorText = await response.text();
+        console.error('Load response error text:', errorText);
+        throw new Error(`Failed to load character: ${response.status} - ${errorText}`);
+      }
+
+      const characterData = await response.json();
+      const actualData = characterData.body || characterData;
+      
+      if (actualData.attributes) {
+        setAttributes(actualData.attributes);
+      }
+      
+      if (actualData.selectedClass) {
+        setSelectedClass(actualData.selectedClass);
+      }
+      
+      if (actualData.skillPoints) {
+        setSkillPoints(actualData.skillPoints);
+      }
+    } catch (error) {
+      console.error('Load failed!', error);
+    } finally {
+      setIsInitialLoad(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCharacter();
+  }, []);
+
+  useEffect(() => {
+    saveCharacter();
+  }, [saveCharacter]);
 
   const incrementAttribute = (attribute: keyof Attributes) => {
     setAttributes((prev) => ({
