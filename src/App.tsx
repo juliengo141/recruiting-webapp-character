@@ -102,17 +102,21 @@ function App() {
   }, [saveCharacter]);
 
   const incrementAttribute = (attribute: keyof Attributes) => {
-    setAttributes((prev) => ({
-      ...prev,
-      [attribute]: prev[attribute] + 1,
-    }));
+    if (canIncrementAttribute(attribute)) {
+      setAttributes((prev) => ({
+        ...prev,
+        [attribute]: prev[attribute] + 1,
+      }));
+    }
   };
   
   const decrementAttribute = (attribute: keyof Attributes) => {
-    setAttributes((prev) => ({
-      ...prev,
-      [attribute]: prev[attribute] - 1,
-    }));
+    if (canDecrementAttribute(attribute)) {
+      setAttributes((prev) => ({
+        ...prev,
+        [attribute]: prev[attribute] - 1,
+      }));
+    }
   };
 
   const meetsClassRequirements = (className: Class): boolean => {
@@ -128,6 +132,18 @@ function App() {
 
   const calculateAbilityModifier = (attributeValue: number): number => {
     return Math.floor((attributeValue - 10) / 2);
+  };
+
+  const getTotalAttributes = (): number => {
+    return Object.values(attributes).reduce((total, value) => total + value, 0);
+  };
+
+  const canIncrementAttribute = (attribute: keyof Attributes): boolean => {
+    return getTotalAttributes() < 70;
+  };
+
+  const canDecrementAttribute = (attribute: keyof Attributes): boolean => {
+    return attributes[attribute] > 1;
   };
 
   const getAvailableSkillPoints = (): number => {
@@ -180,11 +196,24 @@ function App() {
           <div>
             <h2>Attributes</h2>
             <div>
+              <p>Total: {getTotalAttributes()} / 70</p>
               {Object.entries(attributes).map(([attribute, value]) => (
                 <div key={attribute}>
                   <span>{attribute}: {value}</span>
-                  <button className="clickable" onClick={() => incrementAttribute(attribute as keyof Attributes)}>+</button>
-                  <button className="clickable" onClick={() => decrementAttribute(attribute as keyof Attributes)}>-</button>
+                  <button 
+                    className="clickable" 
+                    onClick={() => incrementAttribute(attribute as keyof Attributes)}
+                    disabled={!canIncrementAttribute(attribute as keyof Attributes)}
+                  >
+                    +
+                  </button>
+                  <button 
+                    className="clickable" 
+                    onClick={() => decrementAttribute(attribute as keyof Attributes)}
+                    disabled={!canDecrementAttribute(attribute as keyof Attributes)}
+                  >
+                    -
+                  </button>
                   <span> (Modifier: {calculateAbilityModifier(value)})</span>
                 </div>
               ))}
