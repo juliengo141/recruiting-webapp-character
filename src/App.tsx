@@ -40,6 +40,10 @@ function App() {
   const handleClassClick = (className: Class) => {
     setSelectedClass(selectedClass === className ? null : className);
   };
+
+  const calculateAbilityModifier = (attributeValue: number): number => {
+    return Math.floor((attributeValue - 10) / 2);
+  };
   
   return (
     <div className="App">
@@ -56,6 +60,7 @@ function App() {
                   <span>{attribute}: {value}</span>
                   <button className="clickable" onClick={() => incrementAttribute(attribute as keyof Attributes)}>+</button>
                   <button className="clickable" onClick={() => decrementAttribute(attribute as keyof Attributes)}>-</button>
+                  <span> (Modifier: {calculateAbilityModifier(value)})</span>
                 </div>
               ))}
             </div>
