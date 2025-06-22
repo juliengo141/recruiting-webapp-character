@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './App.css';
 import { ATTRIBUTE_LIST, CLASS_LIST, SKILL_LIST } from './consts';
-import type { Attributes } from './types';
+import type { Attributes, Class } from './types';
 
 
 function App() {
@@ -27,6 +27,13 @@ function App() {
       [attribute]: prev[attribute] - 1,
     }));
   };
+
+  const meetsClassRequirements = (className: Class): boolean => {
+    const classRequirements = CLASS_LIST[className];
+    return Object.entries(classRequirements).every(([attribute, minValue]) => {
+      return attributes[attribute as keyof Attributes] >= minValue;
+    });
+  };
   
   return (
     <div className="App">
@@ -35,7 +42,7 @@ function App() {
       </header>
       <section className="App-section">
         <div>
-          <h2>Character Attributes</h2>
+          <h2>Attributes</h2>
           <div>
             {Object.entries(attributes).map(([attribute, value]) => (
               <div key={attribute}>
@@ -44,6 +51,18 @@ function App() {
                 <button onClick={() => decrementAttribute(attribute as keyof Attributes)}>-</button>
               </div>
             ))}
+          </div>
+          <div>
+            <h2>Classes</h2>
+            <div>
+              {Object.keys(CLASS_LIST).map((className) => (
+                <div key={className}>
+                  <span className={meetsClassRequirements(className as Class) ? 'class-available' : ''}>
+                    {className}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
